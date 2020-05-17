@@ -529,7 +529,12 @@ class Trainer(object):
                 # log whenever there's an XLA compilation, since these
                 # slow down training and may indicate opportunities for
                 # optimization
-                self._check_xla_compilation()
+                try:
+                    self._check_xla_compilation()
+                except AttributeError:
+                    if i == 0:
+                        logger.warning('your torch_xla version does not support metric_data, '
+                                       'xla compilation time check is skipped')
             else:
                 # log stats
                 logging_output = self._reduce_and_log_stats(
