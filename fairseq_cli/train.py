@@ -46,6 +46,13 @@ def main(args, init_distributed=False):
         'Must specify batch size either with --max-tokens or --max-sentences'
     metrics.reset()
 
+    if args.wandb_project:
+        import wandb
+        wandb.init(project=args.wandb_project, config=args, reinit=False)
+
+        if args.user_dir:
+            wandb.save(os.path.join(args.user_dir, '*.py'))
+
     # Initialize CUDA and distributed training
     if torch.cuda.is_available() and not args.cpu and not getattr(args, 'tpu', False):
         torch.cuda.set_device(args.device_id)
@@ -76,6 +83,9 @@ def main(args, init_distributed=False):
         sum(p.numel() for p in model.parameters()),
         sum(p.numel() for p in model.parameters() if p.requires_grad),
     ))
+
+    if args.wandb_project:
+        wandb.watch(model)
 
     # (optionally) Configure quantization
     if args.quantization_config_path is not None:

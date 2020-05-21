@@ -62,7 +62,7 @@ def progress_bar(
             bar = TensorboardProgressBarWrapper(bar, tensorboard_logdir)
 
     if wandb_project:
-        bar = WandBProgressBarWrapper(bar, wandb_project, args)
+        bar = WandBProgressBarWrapper(bar, wandb_project)
 
     return bar
 
@@ -366,7 +366,7 @@ except ImportError:
 class WandBProgressBarWrapper(BaseProgressBar):
     """Log to wandb."""
 
-    def __init__(self, wrapped_bar, wandb_project, args=None):
+    def __init__(self, wrapped_bar, wandb_project):
         self.wrapped_bar = wrapped_bar
         if wandb is None:
             logger.warning('wandb not found, pip install wandb')
@@ -375,12 +375,6 @@ class WandBProgressBarWrapper(BaseProgressBar):
         # reinit=False to ensure if wandb.init() is called multiple times
         # within one process it still references the same run
         wandb.init(project=wandb_project, reinit=False)
-        if args is None:
-            return
-
-        wandb.config.update(args)
-        if args.user_dir:
-            wandb.save(os.path.join(args.user_dir, '*.py'))
 
     def __iter__(self):
         return iter(self.wrapped_bar)
