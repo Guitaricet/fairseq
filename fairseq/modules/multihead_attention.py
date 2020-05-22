@@ -140,6 +140,10 @@ class MultiheadAttention(nn.Module):
         assert embed_dim == self.embed_dim
         assert list(query.size()) == [tgt_len, bsz, embed_dim]
 
+        _bias = None
+        if self.k_proj.bias is not None:
+            _bias = torch.cat((self.q_proj.bias, self.k_proj.bias, self.v_proj.bias))
+
         if (
             not self.onnx_trace
             and not self.tpu  # don't use PyTorch version on TPUs
@@ -157,7 +161,7 @@ class MultiheadAttention(nn.Module):
                 self.embed_dim,
                 self.num_heads,
                 torch.empty([0]),
-                torch.cat((self.q_proj.bias, self.k_proj.bias, self.v_proj.bias)),
+                _bias,
                 self.bias_k,
                 self.bias_v,
                 self.add_zero_attn,
