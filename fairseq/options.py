@@ -216,6 +216,8 @@ def get_parser(desc, default_task="translation"):
                              'of running tensorboard (default: no tensorboard logging)')
     parser.add_argument('--wandb-project', default=None, type=str,
                         help='Weights and Biases project name to use for logging')
+    parser.add_argument('--wandb-upload-checkpoint', default=None, type=str,
+                        help='path to the checkpoint to upload')
     parser.add_argument('--seed', default=1, type=int, metavar='N',
                         help='pseudo random number generator seed')
     parser.add_argument('--cpu', action='store_true', help='use CPU instead of CUDA')

@@ -34,7 +34,6 @@ def progress_bar(
     tensorboard_logdir: Optional[str] = None,
     default_log_format: str = 'tqdm',
     wandb_project: Optional[str] = None,
-    args: Optional = None,
 ):
     if log_format is None:
         log_format = default_log_format

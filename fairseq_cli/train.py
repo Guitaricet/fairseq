@@ -141,6 +141,10 @@ def main(args, init_distributed=False):
             load_dataset=(os.pathsep in getattr(args, 'data', '')),
         )
     train_meter.stop()
+
+    if args.wandb_upload_checkpoint:
+        wandb.save(args.wandb_upload_checkpoint)
+
     logger.info('done training in {:.1f} seconds'.format(train_meter.sum))
 
 
@@ -207,7 +211,6 @@ def train(args, trainer, task, epoch_itr, max_update=math.inf):
         ),
         default_log_format=('tqdm' if not args.no_progress_bar else 'simple'),
         wandb_project=args.wandb_project,
-        args=args
     )
 
     trainer.begin_epoch(epoch_itr.epoch)
