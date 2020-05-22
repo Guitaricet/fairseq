@@ -36,6 +36,7 @@ class MultiheadAttention(nn.Module):
         encoder_decoder_attention=False,
         q_noise=0.0,
         qn_block_size=8,
+        force_fairseq_version=False,
     ):
         super().__init__()
         self.embed_dim = embed_dim
@@ -53,6 +54,7 @@ class MultiheadAttention(nn.Module):
 
         self.self_attention = self_attention
         self.encoder_decoder_attention = encoder_decoder_attention
+        self.force_fairseq_version = force_fairseq_version
 
         assert not self.self_attention or self.qkv_same_dim, (
             "Self-attention requires query, key and " "value to be of the same size"
@@ -140,10 +142,6 @@ class MultiheadAttention(nn.Module):
         assert embed_dim == self.embed_dim
         assert list(query.size()) == [tgt_len, bsz, embed_dim]
 
-        _bias = None
-        if self.k_proj.bias is not None:
-            _bias = torch.cat((self.q_proj.bias, self.k_proj.bias, self.v_proj.bias))
-
         if (
             not self.onnx_trace
             and not self.tpu  # don't use PyTorch version on TPUs
@@ -152,7 +150,12 @@ class MultiheadAttention(nn.Module):
             # A workaround for quantization to work. Otherwise JIT compilation
             # treats bias in linear module as method.
             and not torch.jit.is_scripting()
+            and not self.force_fairseq_version
         ):
+            _bias = None
+            if self.k_proj.bias is not None:
+                _bias = torch.cat((self.q_proj.bias, self.k_proj.bias, self.v_proj.bias))
+
             assert key is not None and value is not None
             return F.multi_head_attention_forward(
                 query,
