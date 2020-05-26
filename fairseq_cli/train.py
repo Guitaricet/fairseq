@@ -58,7 +58,7 @@ def main(args, init_distributed=False):
         checkpoint_utils.verify_checkpoint_directory(args.save_dir)
 
     use_wandb = (args.wandb_project is not None
-                 and not init_distributed or distributed_utils.is_master(args))
+                 and (not init_distributed or distributed_utils.is_master(args)))
 
     if use_wandb:
         import wandb
@@ -66,6 +66,9 @@ def main(args, init_distributed=False):
 
         if args.user_dir:
             wandb.save(os.path.join(args.user_dir, '*.py'))
+    else:
+        # do not use wandb in non-master workers
+        args.wandb_project = None
 
     # Print args
     logger.info(args)
